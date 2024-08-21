@@ -47,6 +47,37 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun createNewsApiService(): NewsApiService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://newsapi.org/v2/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(NewsApiService::class.java)
+    }
+}
+
+@Composable
+fun AppNavigation(navController: NavHostController, apiService: NewsApiService) {
+    Scaffold(
+        topBar = {
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController,
+            startDestination = "main_menu",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("main_menu") { MainMenu(navController) }
+            composable("list_screen") { ListScreen(navController, apiService) }
+            composable("about_screen") { AboutScreen() }
+            composable("details_screen/{itemId}") { backStackEntry ->
+                val itemId = backStackEntry.arguments?.getString("itemId")
+                itemId?.let { DetailScreen(it, apiService) }
+            }
+        }
+    }
+}
+
 @Composable
 fun MainMenu(navController: NavHostController) {
     Column(
@@ -85,6 +116,23 @@ fun MainMenu(navController: NavHostController) {
         )
     }
 }
+
+@Composable
+fun ListScreen(navController: NavHostController, apiService: NewsApiService) {
+    var articles by remember { mutableStateOf<List<Article>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        val apiKey = "ea7a08c15861447298264c001076ffd3"
+        val query = "technology"
+        try {
+            val response = apiService.searchNews(apiKey, query)
+            articles = response.articles
+        } catch (e: Exception) {
+        } finally {
+            isLoading = false
+        }
+    }
 
     if (isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -213,6 +261,21 @@ fun AboutScreen() {
         Text(text = "Dr. Armando Méndez Morales", fontSize =20.sp)
     }
 }
+
+interface NewsApiService {
+    @GET("everything")
+    suspend fun searchNews(
+        @Query("apiKey") apiKey: String,
+        @Query("q") query: String,
+        @Query("pageSize") pageSize: Int = 8
+    ): NewsResponse
+}
+
+data class NewsResponse(
+    val status: String,
+    val totalResults: Int,
+    val articles: List<Article>
+)
 
 data class Article(
     val source: Source,
