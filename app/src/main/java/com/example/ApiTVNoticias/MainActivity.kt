@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,27 +65,68 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController, apiService: NewsApiService) {
-    Scaffold(
-        topBar = {
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController,
-            startDestination = "main_menu",
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable("main_menu") { MainMenu(navController) }
-            composable("list_screen") { ListScreen(navController, apiService) }
-            composable("about_screen") { AboutScreen() }
-            composable("details_screen/{itemId}") { backStackEntry ->
-                val itemId = backStackEntry.arguments?.getString("itemId")
-                itemId?.let { DetailScreen(it, apiService) }
+fun TopNavigationBar(navController: NavHostController) {
+    var expanded by remember { mutableStateOf(false) }
+    @OptIn(ExperimentalMaterial3Api::class)
+    TopAppBar(
+        title = { Text("Noticias", style = MaterialTheme.typography.titleLarge) },
+        actions = {
+            IconButton(onClick = { expanded = true }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "Menu", tint = Color.White)
             }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(Color.Blue)
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Lista", color = Color.White) },
+                    onClick = {
+                        expanded = false
+                        navController.navigate("list_screen")
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Acerca de...", color = Color.White) },
+                    onClick = {
+                        expanded = false
+                        navController.navigate("about_screen")
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Salir", color = Color.White) },
+                    onClick = {
+                        expanded = false
+                        navController.popBackStack()
+                    }
+                )
+            }
+        },
+        colors = TopAppBarDefaults.smallTopAppBarColors(
+            containerColor = Color.Blue,
+            titleContentColor = Color.White
+        )
+    )
+}
+
+@Composable
+fun AppNavigation(navController: NavHostController, apiService: NewsApiService, modifier: Modifier = Modifier) {
+    NavHost(navController, startDestination = "main_menu", modifier = modifier) {
+        composable("main_menu") {
+            MainMenu(navController)
+        }
+        composable("list_screen") {
+            ListScreen(navController, apiService)
+        }
+        composable("about_screen") {
+            AboutScreen()
+        }
+        composable("details_screen/{title}") { backStackEntry ->
+            val title = backStackEntry.arguments?.getString("title") ?: ""
+            DetailScreen(title, apiService)
         }
     }
 }
-
 @Composable
 fun MainMenu(navController: NavHostController) {
     Column(
