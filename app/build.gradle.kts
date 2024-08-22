@@ -86,4 +86,5 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     // Soporte para corutinas en Android
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation(kotlin("script-runtime"))
 }

@@ -97,7 +97,7 @@ fun TopNavigationBar(navController: NavHostController) {
                     text = { Text("Salir", color = Color.White) },
                     onClick = {
                         expanded = false
-                        navController.popBackStack()
+                        System.exit(0)
                     }
                 )
             }
@@ -240,6 +240,7 @@ fun DetailScreen(title: String, apiService: NewsApiService) {
 
     LaunchedEffect(Unit) {
         val apiKey = "ea7a08c15861447298264c001076ffd3"
+        /*val apiKey = "1c6bf351d63b4ecb914adf6dc60bafee"*/
         val query = title
         try {
             val response = apiService.searchNews(apiKey, query)
