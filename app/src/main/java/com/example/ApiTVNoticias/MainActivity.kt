@@ -41,7 +41,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     shape = RectangleShape
                 ) {
-                    AppNavigation(navController, apiService)
+                    Scaffold(
+                        topBar = {
+                            TopNavigationBar(navController)
+                        }
+                    ) { paddingValues ->
+                        AppNavigation(navController = navController, apiService = apiService, modifier = Modifier.padding(paddingValues))
+                    }
                 }
             }
         }
